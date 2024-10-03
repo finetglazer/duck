@@ -1,7 +1,8 @@
-**Thông tin thành viên**
+**Thông tin thành viên**:
 + Trần Mạnh Hùng
 + Đoàn Duy Chinh
 + Nguyễn Vĩnh Hiệp
+<br/>
 
 **Tiêu đề**: 1 website cá cược đua các loại động vật
 <br/>
