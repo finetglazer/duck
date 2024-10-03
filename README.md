@@ -1,3 +1,8 @@
+**Thông tin thành viên**
++ Trần Mạnh Hùng
++ Đoàn Duy Chinh
++ Nguyễn Vĩnh Hiệp
+
 **Tiêu đề**: 1 website cá cược đua các loại động vật
 <br/>
 
@@ -6,7 +11,6 @@
 
 **Công nghệ lựa chọn**: 
 + BE: Java
-+ Database: MongoDB
 + FE: HTML + CSS + ReactJS
 <br/>
 
