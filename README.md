@@ -21,3 +21,5 @@
   + Không có dịch vụ hỗ trợ nhắn tin 24/24
   + Không cổ súy cá cược
   + Dành cho người chơi từ 21 tuổi
+
+Link web: https://animalrace.vercel.app
