@@ -27,6 +27,8 @@
           </li>
         </ul>
         <div class="d-flex">
+          <i v-if="!statusVol" class="bi bi-volume-mute-fill me-3 text-white" style="cursor: pointer;" @click="handleTurnOn"></i>
+          <i v-else class="bi bi-volume-up-fill me-4 text-white" style="cursor: pointer;" @click="handleTurnOf"></i>
           <a target="_blank" href="https://github.com/jnp2018/mid-project-419084084" class="me-4 text-white">
             <i class="bi bi-github"></i>
           </a>
@@ -39,6 +41,7 @@
           <a href="#" class="text-white">
             <i class="bi bi-moon"></i>
           </a>
+
         </div>
       </div>
     </div>
@@ -47,6 +50,36 @@
 
 <script setup>
 import duck from "../assets/img/duck-toy.png"
+import { ref, stop } from "vue"
+import { defineProps, defineEmits, watch } from "vue";
+const statusVol = ref(false);
+const props = defineProps({
+  muted: {
+    type: Boolean,
+    default: false,
+  }
+})
+
+watch(props, () => {
+
+  statusVol.value = props.muted;
+})
+
+const emit = defineEmits([
+  "muted",
+]) 
+
+const handleTurnOn = () => {
+  statusVol.value = true;
+  emit("muted", true);
+}
+
+const handleTurnOf = () => {
+  statusVol.value = false;
+  emit("muted", false);
+}
+
+// const muted = ref(false);
 </script>
 <style lang="scss" scoped>
 .navbar {

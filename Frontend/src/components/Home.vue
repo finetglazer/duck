@@ -4,8 +4,8 @@
         <!-- <img :src="banner" alt="" class="banner"> -->
         <video autoplay muted loop class="banner">
             <source :src="bannerVideo" type="video/mp4" />
-            Your browser does not support the video tag.
         </video>
+      
     </div>
     <div class="zoom">
         <div>
@@ -25,11 +25,11 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue"
 import bannerVideo from "../assets/video/race.mp4"
 import duck from "../assets/img/duck-toy.png"
 import dog from "../assets/img/dog.png"
 import logo from "../assets/img/logo_2 .webp"
-
 </script>
 
 <style lang="css">

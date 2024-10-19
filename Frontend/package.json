@@ -9,8 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "socket.io-client": "^4.8.0",
     "vue": "^3.4.37",
     "vue-router": "^4.4.5"
   },
