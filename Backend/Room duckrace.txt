@@ -1,0 +1,49 @@
+1. Build up another path with different handle socket for better code control.
+
+2. Time constraints: 
+60s for each race.
+60s for betting the candidate.
+
+3. Point reward
++ Get all betting point
++ Reward to every winner with the total value divided with the proportion
++ Nếu không ai thắng thì toàn bộ tiền cược được cộng vào ván sau 
+
+Example:
+Total bet pool: 1000 points
+Player A bet 300 points on the winning candidate.
+Player B bet 100 points on the same winning candidate.
+Total winning bets: 400 points (300 from Player A, 100 from Player B)
+The rewards would be calculated as:
+
+Player A's reward: 
+300/400×1000=750
+400/300×1000=750 points
+
+Player B's reward: 
+100/400×1000=250
+400/100×1000=250 points
+
+4. Candidates
+Number: 7 
+
+
+*** Code requirement:
+1. Just different handle socket and a new socket
+2. About time constraint
+We use BE handle time logic: countdown logic
+Front-end display the remaining time after receiving from BE
+3. 
+FE: Choosing the candidate and set the point to bet ->
+BE: Tạm thời trừ điểm đặt, tạo 1 biến tính tổng bet pools -> Sau khi cuộc đua kết thúc -> Hiển thị người thắng + Thay đổi điểm gửi cho -> FE
+
+4. Using separate thread for each candidate. Lets the run for 60s, then choose the winner one. 
+
+*** Code specific: 
+
+
+
+*** Cơ chế giải đấu: 
+Vào 1 phòng, cứ mỗi round phải đặt khoản tiền lót tăng dần lên để tăng áp lực mỗi vòng
+Rời đi thì tiền chia đều cho người còn lại 
+Ai tồn tại cuối cùng là người chiến thắng. 
