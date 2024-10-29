@@ -78,16 +78,21 @@ public class LobbySocketHandler extends TextWebSocketHandler {
         if (clientMessage.startsWith("SET_NAME:")) {
             String newName = clientMessage.split(":")[1];
             player.setName(newName);
-            broadcastPlayerListToAll();
+
+            // Broadcast updated player data to all clients
+            playerService.broadcastPlayerUpdate(player);
         }
 
         // Handle point update
         if (clientMessage.startsWith("ADD_POINTS:")) {
             int points = Integer.parseInt(clientMessage.split(":")[1]);
             player.addPoints(points);
-            broadcastPlayerListToAll();
+
+            // Broadcast updated player data to all clients
+            playerService.broadcastPlayerUpdate(player);
         }
     }
+
 
 
     // Broadcast the full player list to all connected clients
