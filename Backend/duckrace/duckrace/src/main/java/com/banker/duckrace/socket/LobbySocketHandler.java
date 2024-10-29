@@ -20,8 +20,6 @@ public class LobbySocketHandler extends TextWebSocketHandler {
     private PlayerService playerService;
 
 
-
-
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         // Generate a unique player ID
@@ -44,7 +42,7 @@ public class LobbySocketHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage("PLAYER_ID:" + playerId));
 
         // Broadcast updated player list
-        broadcastPlayerListToAll();
+        playerService.broadcastPlayerListToAll();
     }
 
 
@@ -80,7 +78,7 @@ public class LobbySocketHandler extends TextWebSocketHandler {
             player.setName(newName);
 
             // Broadcast updated player data to all clients
-            playerService.broadcastPlayerUpdate(player);
+            playerService.broadcastPlayerListToAll();
         }
 
         // Handle point update
@@ -89,7 +87,7 @@ public class LobbySocketHandler extends TextWebSocketHandler {
             player.addPoints(points);
 
             // Broadcast updated player data to all clients
-            playerService.broadcastPlayerUpdate(player);
+            playerService.broadcastPlayerListToAll();
         }
     }
 
