@@ -56,7 +56,9 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             playerService.getRaceSessions().put(session.getId(), session);
 
             // Send confirmation
+            //add points to player
             session.sendMessage(new TextMessage("{\"type\":\"connectedToRaceRoom\"}"));
+            session.sendMessage(new TextMessage("{\"type\":\"points\",\"points\":" + playerService.getPlayerSessions().get(playerId).getPoints() + "}"));
         } else {
             // Invalid player ID
             session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Invalid player ID\"}"));
@@ -102,8 +104,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             switch (type) {
                 case "placeBet":
 
-                    int candidateId = (int) messageMap.get("candidateId");
-                    int amount = (int) messageMap.get("amount");
+                    int candidateId = Integer.parseInt((String) messageMap.get("candidateId"));
+                    int amount = Integer.parseInt((String) messageMap.get("amount"));
                     handlePlaceBet(player, candidateId, amount, session);
                     break;
                 default:
