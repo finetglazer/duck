@@ -1,4 +1,4 @@
-package com.banker.duckrace.configuration;
+package com.banker.duckrace.socket;
 
 import com.banker.duckrace.constant.PlayerService;
 import com.banker.duckrace.model.Player;
@@ -10,9 +10,10 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
-public class DuckRaceWebSocketHandler extends TextWebSocketHandler {
+public class LobbySocketHandler extends TextWebSocketHandler {
 
     @Autowired
     private PlayerService playerService;
@@ -21,16 +22,29 @@ public class DuckRaceWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // When a new Player connects, assign them a default name and points
-        Player newPlayer = new Player("Player_" + session.getId(), 0);
-        playerService.getPlayerSessions().put(session.getId(), newPlayer);
+        // Generate a unique player ID
+        String playerId = UUID.randomUUID().toString();
+
+        // When a new player connects, assign them a default name and points
+        Player newPlayer = new Player("Player_" + playerId, 0);
+        newPlayer.setId(playerId); // Set the player ID
+
+        // Store the player with their unique ID
+        playerService.getPlayerSessions().put(playerId, newPlayer);
+
+        // Associate the WebSocket session with the player ID
+        playerService.getSessionIdToPlayerIdMap().put(session.getId(), playerId);
 
         // Store the WebSocket session
         playerService.getWebSocketSessions().put(session.getId(), session);
 
+        // Send the player ID back to the client
+        session.sendMessage(new TextMessage("PLAYER_ID:" + playerId));
+
         // Broadcast updated player list to all clients
         broadcastPlayerListToAll();
     }
+
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) throws Exception {
