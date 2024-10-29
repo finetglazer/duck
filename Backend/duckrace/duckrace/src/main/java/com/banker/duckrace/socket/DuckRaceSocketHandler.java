@@ -46,27 +46,26 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        // Extract the playerId from the query parameters
         String playerId = getPlayerIdFromSession(session);
 
         if (playerId != null && playerService.getPlayerSessions().containsKey(playerId)) {
-            // Associate the session ID with the player ID
+            // Associate session ID with player ID
             playerService.getSessionIdToPlayerIdMap().put(session.getId(), playerId);
 
-            // Store the WebSocket session
-            playerService.getWebSocketSessions().put(session.getId(), session);
+            // Store session in raceSessions
+            playerService.getRaceSessions().put(session.getId(), session);
 
-            // Optionally, send a confirmation message to the client
+            // Send confirmation
             session.sendMessage(new TextMessage("{\"type\":\"connectedToRaceRoom\"}"));
         } else {
-            // Handle the case where the player ID is invalid or missing
+            // Invalid player ID
             session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Invalid player ID\"}"));
             session.close();
         }
     }
 
     private String getPlayerIdFromSession(WebSocketSession session) {
-        String query = session.getUri().getQuery(); // Get the query string
+        String query = session.getUri().getQuery();
         if (query != null) {
             for (String param : query.split("&")) {
                 String[] pair = param.split("=");
@@ -82,13 +81,13 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
 
-        // Parse the incoming message as JSON
+        // Parse JSON
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> messageMap = mapper.readValue(payload, Map.class);
 
         String type = (String) messageMap.get("type");
 
-        // Retrieve the player ID associated with this session
+        // Get playerId and Player
         String playerId = playerService.getSessionIdToPlayerIdMap().get(session.getId());
         Player player = playerService.getPlayerSessions().get(playerId);
 
@@ -326,7 +325,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
     }
 
     private void broadcastToAll(String message) throws IOException {
-        for (WebSocketSession session : playerService.getWebSocketSessions().values()) {
+        // Send to race sessions only
+        for (WebSocketSession session : playerService.getRaceSessions().values()) {
             if (session.isOpen()) {
                 session.sendMessage(new TextMessage(message));
             }
@@ -336,16 +336,13 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String sessionId = session.getId();
-        String playerId = playerService.getSessionIdToPlayerIdMap().remove(sessionId);
-        playerService.getWebSocketSessions().remove(sessionId);
-        // Optionally, handle player status (e.g., mark as offline)
+        playerService.getSessionIdToPlayerIdMap().remove(sessionId);
+        playerService.getRaceSessions().remove(sessionId);
+        // Optionally handle player status
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        String sessionId = session.getId();
-        String playerId = playerService.getSessionIdToPlayerIdMap().remove(sessionId);
-        playerService.getWebSocketSessions().remove(sessionId);
-        // Optionally, handle the error or notify the player
+        afterConnectionClosed(session, CloseStatus.SERVER_ERROR);
     }
 }
