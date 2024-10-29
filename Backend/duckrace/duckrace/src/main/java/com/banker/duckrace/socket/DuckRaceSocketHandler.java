@@ -80,6 +80,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
+
+            System.out.println(message.getPayload());
             String payload = message.getPayload();
 
             // Parse the incoming message as JSON
@@ -99,7 +101,7 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
 
             switch (type) {
                 case "placeBet":
-                    System.out.println(message.getPayload());
+
                     int candidateId = (int) messageMap.get("candidateId");
                     int amount = (int) messageMap.get("amount");
                     handlePlaceBet(player, candidateId, amount, session);
