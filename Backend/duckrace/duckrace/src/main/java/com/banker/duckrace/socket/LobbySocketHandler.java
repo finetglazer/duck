@@ -58,7 +58,7 @@ public class LobbySocketHandler extends TextWebSocketHandler {
         playerService.getLobbySessions().remove(sessionId);
 
         // Broadcast updated player list
-        broadcastPlayerListToAll();
+        playerService.broadcastPlayerListToAll();
     }
 
     @Override
