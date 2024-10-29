@@ -80,9 +80,9 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
-
             System.out.println(message.getPayload());
             String payload = message.getPayload();
+            session.sendMessage(new TextMessage("{\"type\":\"echo\",\"message\":\"" + payload + "\"}"));
 
             // Parse the incoming message as JSON
             ObjectMapper mapper = new ObjectMapper();
