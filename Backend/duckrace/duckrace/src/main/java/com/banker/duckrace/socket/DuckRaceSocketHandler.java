@@ -56,7 +56,9 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             playerService.getRaceSessions().put(session.getId(), session);
 
             // Send confirmation
+            //add points to player
             session.sendMessage(new TextMessage("{\"type\":\"connectedToRaceRoom\"}"));
+            session.sendMessage(new TextMessage("{\"type\":\"points\",\"points\":" + playerService.getPlayerSessions().get(playerId).getPoints() + "}"));
         } else {
             // Invalid player ID
             session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Invalid player ID\"}"));
