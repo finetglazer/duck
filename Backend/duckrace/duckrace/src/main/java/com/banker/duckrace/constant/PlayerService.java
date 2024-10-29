@@ -87,23 +87,23 @@ public class PlayerService {
         }
     }
 
-    public void broadcastPlayerUpdate(Player player) {
-        try {
-            Map<String, Object> message = new HashMap<>();
-            message.put("type", "playerUpdate");
-            message.put("player", player);
-            String playerUpdateJson = new ObjectMapper().writeValueAsString(message);
-
-            broadcastToAll(playerUpdateJson);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void broadcastPlayerUpdate() {
+//        try {
+//            Map<String, Object> message = new HashMap<>();
+//            message.put("type", "playerUpdate");
+//            message.put("players", playerSessions.values());
+//            String playerUpdateJson = new ObjectMapper().writeValueAsString(message);
+//
+//            broadcastToAll(playerUpdateJson);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void broadcastPlayerListToAll() {
         try {
             Map<String, Object> message = new HashMap<>();
-            message.put("type", "playerList");
+            message.put("type", "playerUpdate");
             message.put("players", playerSessions.values());
             String playerListJson = new ObjectMapper().writeValueAsString(message);
 
