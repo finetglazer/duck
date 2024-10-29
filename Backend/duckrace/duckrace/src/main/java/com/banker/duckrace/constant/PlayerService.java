@@ -1,10 +1,15 @@
 package com.banker.duckrace.constant;
 
 import com.banker.duckrace.model.Player;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 @Service
@@ -53,4 +58,60 @@ public class PlayerService {
         }
         return null;
     }
+    public void broadcastToAll(String message) {
+        broadcastToLobby(message);
+        broadcastToRace(message);
+    }
+
+    public void broadcastToLobby(String message) {
+        for (WebSocketSession session : lobbySessions.values()) {
+            if (session.isOpen()) {
+                try {
+                    session.sendMessage(new TextMessage(message));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void broadcastToRace(String message) {
+        for (WebSocketSession session : raceSessions.values()) {
+            if (session.isOpen()) {
+                try {
+                    session.sendMessage(new TextMessage(message));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void broadcastPlayerUpdate(Player player) {
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "playerUpdate");
+            message.put("player", player);
+            String playerUpdateJson = new ObjectMapper().writeValueAsString(message);
+
+            broadcastToAll(playerUpdateJson);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void broadcastPlayerListToAll() {
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "playerList");
+            message.put("players", playerSessions.values());
+            String playerListJson = new ObjectMapper().writeValueAsString(message);
+
+            broadcastToAll(playerListJson);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

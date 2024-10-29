@@ -191,6 +191,9 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             player.setPoints(player.getPoints() - amount);
         }
 
+        // Broadcast updated player data to all clients
+        playerService.broadcastPlayerUpdate(player);
+
         // Create a new bet
         Bet bet = new Bet(player.getId(), candidateId, amount);
 
@@ -321,6 +324,9 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
                     if (playerSession != null && playerSession.isOpen()) {
                         playerSession.sendMessage(new TextMessage(rewardMsg));
                     }
+
+                    // Broadcast updated player data to all clients
+                    playerService.broadcastPlayerUpdate(player);
                 }
             }
             // Reset the total bet pool after distributing rewards
