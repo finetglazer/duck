@@ -78,34 +78,45 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String payload = message.getPayload();
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        try {
+            String payload = message.getPayload();
 
-        // Parse JSON
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> messageMap = mapper.readValue(payload, Map.class);
+            // Parse the incoming message as JSON
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> messageMap = mapper.readValue(payload, Map.class);
 
-        String type = (String) messageMap.get("type");
+            String type = (String) messageMap.get("type");
 
-        // Get playerId and Player
-        String playerId = playerService.getSessionIdToPlayerIdMap().get(session.getId());
-        Player player = playerService.getPlayerSessions().get(playerId);
+            // Retrieve the player ID associated with this session
+            String playerId = playerService.getSessionIdToPlayerIdMap().get(session.getId());
+            Player player = playerService.getPlayerSessions().get(playerId);
 
-        if (player == null) {
-            session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Player not found\"}"));
-            return;
-        }
+            if (player == null) {
+                session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Player not found\"}"));
+                return;
+            }
 
-        switch (type) {
-            case "placeBet":
-                int candidateId = (int) messageMap.get("candidateId");
-                int amount = (int) messageMap.get("amount");
-                handlePlaceBet(player, candidateId, amount, session);
-                break;
-            default:
-                session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Unknown message type\"}"));
+            switch (type) {
+                case "placeBet":
+                    System.out.println(message.getPayload());
+                    int candidateId = (int) messageMap.get("candidateId");
+                    int amount = (int) messageMap.get("amount");
+                    handlePlaceBet(player, candidateId, amount, session);
+                    break;
+                default:
+                    session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Unknown message type\"}"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                session.sendMessage(new TextMessage("{\"type\":\"error\",\"message\":\"Invalid message format\"}"));
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
         }
     }
+
 
     private synchronized void handleStartBetting() throws IOException {
         if (isBettingOpen || isRaceInProgress) {
