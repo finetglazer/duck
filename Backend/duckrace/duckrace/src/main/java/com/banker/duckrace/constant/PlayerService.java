@@ -4,10 +4,7 @@ import com.banker.duckrace.model.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -107,9 +104,7 @@ public class PlayerService {
         try {
             Map<String, Object> message = new HashMap<>();
             message.put("type", "playerUpdate");
-            List<Integer> playerList = new ArrayList(playerSessions.values());
-            Collections.sort(playerList);
-            message.put("players", playerList);
+            message.put("players", playerSessions.values());
             String playerListJson = new ObjectMapper().writeValueAsString(message);
 
             broadcastToAll(playerListJson);
