@@ -10,24 +10,27 @@ import org.springframework.web.socket.WebSocketSession;
 @Service
 public class PlayerService {
 
-    // Shared map to store player sessions
-    private ConcurrentHashMap<String, Player> playerSessions = new ConcurrentHashMap<>();
-
-    // Shared map to store WebSocket sessions
-    private ConcurrentHashMap<String, WebSocketSession> webSocketSessions = new ConcurrentHashMap<>();
-
+    private Map<String, Player> playerSessions = new ConcurrentHashMap<>(); // Key: playerId
     private Map<String, String> sessionIdToPlayerIdMap = new ConcurrentHashMap<>();
+
+    // Separate session maps for lobby and race room
+    private Map<String, WebSocketSession> lobbySessions = new ConcurrentHashMap<>();
+    private Map<String, WebSocketSession> raceSessions = new ConcurrentHashMap<>();
+
+    public Map<String, Player> getPlayerSessions() {
+        return playerSessions;
+    }
 
     public Map<String, String> getSessionIdToPlayerIdMap() {
         return sessionIdToPlayerIdMap;
     }
 
-    public ConcurrentHashMap<String, Player> getPlayerSessions() {
-        return playerSessions;
+    public Map<String, WebSocketSession> getLobbySessions() {
+        return lobbySessions;
     }
 
-    public ConcurrentHashMap<String, WebSocketSession> getWebSocketSessions() {
-        return webSocketSessions;
+    public Map<String, WebSocketSession> getRaceSessions() {
+        return raceSessions;
     }
 
     public WebSocketSession getSessionByPlayerId(String playerId) {
@@ -39,11 +42,15 @@ public class PlayerService {
             }
         }
         if (sessionId != null) {
-            return webSocketSessions.get(sessionId);
+            // Check raceSessions first
+            WebSocketSession session = raceSessions.get(sessionId);
+            if (session != null) {
+                return session;
+            }
+            // Then check lobbySessions
+            session = lobbySessions.get(sessionId);
+            return session;
         }
         return null;
     }
-
-
-    // Optional: Add methods to add/remove players and WebSocket sessions as needed
 }
