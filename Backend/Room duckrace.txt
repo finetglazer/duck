@@ -1,13 +1,15 @@
 1. Build up another path with different handle socket for better code control.
 
-2. Time constraints: 
-60s for each race.
-60s for betting the candidate.
+2. Constraints: 
+* Time: 
+For each race. We will have a certain length for the race, and if any ducks comes to race first, then it will won. 
+For betting the candidate. -> 30s
 
-3. Point reward
-+ Get all betting point
+* Point reward
++ Get all betting point in the sum pool
++ Any candidates can be betted by many players
 + Reward to every winner with the total value divided with the proportion
-+ Nếu không ai thắng thì toàn bộ tiền cược được cộng vào ván sau 
++ If no ones win, total pool will be let for the next match. 
 
 Example:
 Total bet pool: 1000 points
@@ -24,8 +26,8 @@ Player B's reward:
 100/400×1000=250
 400/100×1000=250 points
 
-4. Candidates
-Number: 7 
+* Candidates
+Number: 5
 
 
 *** Code requirement:
@@ -33,14 +35,43 @@ Number: 7
 2. About time constraint
 We use BE handle time logic: countdown logic
 Front-end display the remaining time after receiving from BE
-3. 
+3. System flow
 FE: Choosing the candidate and set the point to bet ->
-BE: Tạm thời trừ điểm đặt, tạo 1 biến tính tổng bet pools -> Sau khi cuộc đua kết thúc -> Hiển thị người thắng + Thay đổi điểm gửi cho -> FE
+BE: At the betting time, Create a sum variable -> Time start, then all duck candidates (threads) coming -> what duck comes to the end points first will win -> Update points -> Send the players win and points for the FE displaying. 
 
-4. Using separate thread for each candidate. Lets the run for 60s, then choose the winner one. 
+4. Using separate thread for each candidate. Set up the fixed length of race, then the first duck comes will be the winning one
 
 *** Code specific: 
+1. Using Threads for each candidate:
++ Proceed with using one thread per candidate.
++ Keep the thread logic straightforward to minimize complexity.
++ Implement proper synchronization to ensure thread safety.
 
+2. Pre-Determining the Winner and Simulating the Race
++ Proceed with pre-determining the winner.
++ Use threads to simulate the race progress in a way that reflects the pre-selected outcome.
+
+
+3. Handling Integer Points for Betting and Rewards
+
++ Use long data type for point values to handle larger numbers and prevent overflow.
++ Carefully perform arithmetic operations to maintain accuracy.
++ Implement logic to handle remainders in a way that fits your game's rules.
+Using bet class: playerId, candidateId, amount. Use Map to store
+
+4. Communication through protocols
+
+timer, remaining time
+raceStart
+raceUpdate, positions: "1": 50, "2": 45, ...
+raceResult, winner, rewards: [{"playerId": "abc123", "reward": 750}, {"playerId": "def456", "reward": 250}]
+
+5. Error handling and validation
+Input validation:
++  Betamount: > 0 and the player has enough points
++ Candidate Selection: verify the candidateID is within the valid range(1-5)
+
+6. Add loggin and monitoring
 
 
 *** Cơ chế giải đấu: 
