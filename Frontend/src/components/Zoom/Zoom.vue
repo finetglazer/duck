@@ -1,6 +1,5 @@
 <template>
     <div class="d-flex gap-3">
-
         <div class="zoom mt-2">
             <div class="d-flex justify-content-between">
                 <p class="text-info mx-3" style="font-size: 22px; font-weight: 600">Hello, {{ nickname ? nickname : "Player" }}</p>
@@ -13,7 +12,7 @@
                         <img :src="duck" class="card-img-top icon_race" alt="...">
                     </h5>
                     <p class="card-text"> Player bet on the duck you want to choose</p>
-                    <a href="#" class="btn btn-primary">Join zoom</a>
+                    <a href="/zoom/zoom-duck" target="_blank" class="btn btn-primary">Join zoom</a>
                 </div>
             </div>
             <div class="card" style="margin-top: 20px">
@@ -23,7 +22,7 @@
                         <img :src="dog" class="card-img-top icon_race" alt="...">
                     </h5>
                     <p class="card-text">Player bet on the dog you want to choose</p>
-                    <a href="#" class="btn btn-warning">Join zoom</a>
+                    <a href="/zoom/zoom-duck" class="btn btn-warning">Join zoom</a>
                 </div>
             </div>
             <div class="card" style="margin-top: 20px">
@@ -33,7 +32,7 @@
                         <img :src="turtle" class="card-img-top icon_race" alt="...">
                     </h5>
                     <p class="card-text">Player bet on the turtle you want to choose</p>
-                    <a href="#" class="btn btn-danger">Join zoom</a>
+                    <a href="/zoom/zoom-duck" class="btn btn-danger">Join zoom</a>
                 </div>
             </div>
             <div class="card" style="margin-top: 20px">
@@ -43,7 +42,7 @@
                         <img :src="camel" class="card-img-top icon_race" alt="...">
                     </h5>
                     <p class="card-text">Player bet on the camel you want to choose</p>
-                    <a href="#" class="btn btn-success">Join zoom</a>
+                    <a href="/zoom/zoom-duck" class="btn btn-success">Join zoom</a>
                 </div>
             </div>
         </div>
@@ -63,10 +62,11 @@
                             <span>#{{ index + 1}}.</span>
                             {{ user.name }} 
                         </span>
-                        <!-- <span class="text-danger">{{ user.coin }}</span> -->
-                        <span class="badge rounded-pill text-bg-info text-white" style="min-width: 80px; max-height: 30px; font-size: 18px;">{{ user.points + 100 }}</span>
+                        <span class="badge rounded-pill text-bg-info text-white d-flex gap-1" style="min-width: 80px; max-height: 30px; font-size: 18px;">
+                            {{ user.points }} 
+                            <img :src="dollar" class="card-img-top icon-point" alt="...">
+                        </span>
                     </p>
-                    <!-- <a href="#" class="btn btn-warning">Join zoom</a> -->
                 </div>
             </div>
         </div>
@@ -112,24 +112,12 @@ import turtle from "../../assets/img/turtle.png"
 import camel from "../../assets/img/camel _2.png"
 import dog from "../../assets/img/dog.png"
 import rank from "../../assets/img/ranking.png"
+import dollar from "../../assets/img/dollar.png"
 const players = ref([]);
 const showModal = ref(false);
 const nickname = ref("");
 const cnt = 0;
-
 const ip = ref("");
-
-// onMounted(async () => {
-//   try {
-//     const response = await fetch('https://api64.ipify.org?format=json');
-//     const data = await response.json();
-//     ip.value = data.ip;
-//     // console.log("ip: ", ip.value);
-//     localStorage.setItem("user_ip", ip.value);
-//   } catch (error) {
-//     console.error('Error fetching IP:', error);
-//   }
-// });
 
 const closeModal = () => {
     showModal.value = false;
@@ -147,12 +135,16 @@ const filterPlayers = (arr) => {
 }
 
 const socket = new WebSocket('wss://pure-caverns-67534-35c6a327ed88.herokuapp.com/duckRace');
-// socket.addEventListener('open', function (event) {
-//     console.log('Connected to WebSocket server');
-// });
-
 socket.addEventListener('message', function (event) {
-    players.value = filterPlayers(event.data);
+    console.log(event.data);
+    if(event.data.startsWith("PLAYER_ID")) {
+        console.log(event.data.split(":")[1]);
+        
+        localStorage.setItem("player_id", event.data.split(":")[1]);
+    } else {
+        const users = JSON.parse(event.data);
+        players.value = users.players.sort((a, b) => b.points - a.points);
+    }
 });
 
 
@@ -169,22 +161,6 @@ function renameAction(nickname) {
     }
     showModal.value = false;
 }
-
-
-const users = ref([
-    {
-        name: "Player1",
-        coin: "2000"
-    },
-    {
-        name: "Player2",
-        coin: "1500"
-    },
-    {
-        name: "Player3",
-        coin: "1200"
-    },
-])
 
 </script>
 
@@ -214,10 +190,15 @@ const users = ref([
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent overlay */
+  background-color: rgba(0, 0, 0, 0.8); 
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1050; /* Ensure it is on top of other elements */
+  z-index: 1050;
+}
+
+.icon-point {
+    width: 20px;
+    height: 20px;
 }
 </style>
