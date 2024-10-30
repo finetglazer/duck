@@ -1,0 +1,10 @@
+Update requirement
+FE
++, 5 con vịt h còn 3
++, 25s còn 30s -> wtf 
++, Set bet chỉ được đặt 1 lần 
++, Có vạch đích cho vịt hiển thị đã đến đích 
+
+BE: 
++, Gửi vị trí vịt cho FE hiển thị
++, Không set bet 1 game là game sau không chơi được 
