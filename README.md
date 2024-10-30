@@ -24,3 +24,4 @@
 
 Link web FE: https://animalrace.vercel.app <br/>
 Link live BE: https://pure-caverns-67534-35c6a327ed88.herokuapp.com/duckRace <br/>
+Link check log: https://pure-caverns-67534-35c6a327ed88.herokuapp.com/log
