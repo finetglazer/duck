@@ -1,4 +1,0 @@
-dfg
-qeqe
-a
-d
