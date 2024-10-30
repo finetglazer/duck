@@ -19,7 +19,7 @@ jobs:
 
       - name: Deploy to Heroku
         env:
-          HEROKU_API_KEY: HRKU-b80a0159-b8fe-45d5-8004-b1554c8ff413
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           heroku git:remote -a pure-caverns-67534
           git push heroku main
