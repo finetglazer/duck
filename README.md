@@ -22,5 +22,6 @@
   + Không cổ súy cá cược
   + Dành cho người chơi từ 21 tuổi
 
-Link web FE: https://animalrace.vercel.app
-Link live BE: https://pure-caverns-67534-35c6a327ed88.herokuapp.com/duckRace
+Link web FE: https://animalrace.vercel.app <br/>
+Link live BE: https://pure-caverns-67534-35c6a327ed88.herokuapp.com/duckRace <br/>
+Link check log: https://pure-caverns-67534-35c6a327ed88.herokuapp.com/log
