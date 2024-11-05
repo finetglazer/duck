@@ -216,57 +216,56 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         // Randomly select a winning candidate
         winningCandidateId = new Random().nextInt(5) + 1; // Candidate IDs are from 1 to 5
 
-        // Simulate the race using threads
-        simulateRace();
-
-        // After race is over, calculate rewards
-        calculateRewards();
-    }
-
-    private void simulateRace() throws IOException, InterruptedException {
-        // Broadcast to all players that the race has started
-        broadcastToAll("{\"type\":\"raceStarted\",\"message\":\"The race has started!\"}");
-
-        // Map to store the finish times of all candidates
-        Map<Integer, Integer> candidateFinishTimes = new ConcurrentHashMap<>();
-
-        // Shared flag to indicate when the race is over
-        final AtomicBoolean raceOver = new AtomicBoolean(false);
-
-        // Map to store the total race duration for each candidate (in milliseconds)
-        Map<Integer, Integer> candidateRaceDurations = new HashMap<>();
-
         // Determine total race durations for each candidate
+        Map<Integer, Integer> candidateRaceDurations = new HashMap<>();
         Random rand = new Random();
-        int winningCandidateDuration = 10000; // 10 seconds for the winner
+        int winningCandidateDuration = 10; // 10 seconds for the winner
         candidateRaceDurations.put(winningCandidateId, winningCandidateDuration);
 
         // Assign durations for other candidates (11 to 15 seconds)
         for (int i = 1; i <= 5; i++) {
             if (i != winningCandidateId) {
-                int duration = rand.nextInt(5000) + 11000; // Random between 11,000 to 15,000 ms
+                int duration = rand.nextInt(5) + 11; // Random between 11 to 15 seconds
                 candidateRaceDurations.put(i, duration);
             }
         }
 
+        // Send finish times to clients before the race starts
+        Map<String, Object> finishTimesMessage = new HashMap<>();
+        finishTimesMessage.put("type", "raceFinishTimes");
+        finishTimesMessage.put("finishTimes", candidateRaceDurations);
+        String finishTimesJson = new ObjectMapper().writeValueAsString(finishTimesMessage);
+        broadcastToAll(finishTimesJson);
+
+        // Now broadcast that the race has started
+        broadcastToAll("{\"type\":\"raceStarted\",\"message\":\"The race has started!\"}");
+
+        // Simulate the race using threads
+        simulateRace(candidateRaceDurations);
+
+        // After race is over, calculate rewards
+        calculateRewards();
+    }
+
+    private void simulateRace(Map<Integer, Integer> candidateRaceDurations) throws IOException, InterruptedException {
+        // No need to send finish times again
+        // Map to store the finish times of all candidates (in seconds)
+        Map<Integer, Integer> candidateFinishTimes = new ConcurrentHashMap<>(candidateRaceDurations);
+
         List<Thread> threads = new ArrayList<>();
+        final AtomicBoolean raceOver = new AtomicBoolean(false);
 
         // Create and start threads for each candidate
         for (int candidateId = 1; candidateId <= 5; candidateId++) {
             final int cid = candidateId;
             Thread thread = new Thread(() -> {
                 int totalDuration = candidateRaceDurations.get(cid);
-                long startTime = System.currentTimeMillis();
-
                 try {
-                    // Simulate the race by sleeping for the total duration
-                    Thread.sleep(totalDuration);
+                    // Simulate the race by sleeping for the total duration in seconds
+                    Thread.sleep(totalDuration * 1000L);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-
-                long finishTime = System.currentTimeMillis() - startTime;
-                candidateFinishTimes.put(cid, (int) finishTime);
 
                 // Check if the winning candidate has finished
                 if (cid == winningCandidateId) {
@@ -281,13 +280,6 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         for (Thread thread : threads) {
             thread.join();
         }
-
-        // Send finish times to all players
-        Map<String, Object> finishTimesMessage = new HashMap<>();
-        finishTimesMessage.put("type", "raceFinishTimes");
-        finishTimesMessage.put("finishTimes", candidateFinishTimes);
-        String finishTimesJson = new ObjectMapper().writeValueAsString(finishTimesMessage);
-        broadcastToAll(finishTimesJson);
 
         // Announce the winner
         Map<String, Object> resultMessage = new HashMap<>();
