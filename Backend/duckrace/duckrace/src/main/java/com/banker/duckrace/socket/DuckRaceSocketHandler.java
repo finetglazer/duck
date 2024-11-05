@@ -57,7 +57,6 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             playerService.getRaceSessions().put(session.getId(), session);
 
             // Send confirmation
-            //add points to player
             session.sendMessage(new TextMessage("{\"type\":\"connectedToRaceRoom\"}"));
             session.sendMessage(new TextMessage("{\"type\":\"points\",\"points\":" + playerService.getPlayerSessions().get(playerId).getPoints() + "}"));
         } else {
@@ -104,9 +103,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
 
             switch (type) {
                 case "placeBet":
-
-                    int candidateId = Integer.parseInt((String) messageMap.get("candidateId"));
-                    int amount = Integer.parseInt((String) messageMap.get("amount"));
+                    int candidateId = Integer.parseInt(messageMap.get("candidateId").toString());
+                    int amount = Integer.parseInt(messageMap.get("amount").toString());
                     handlePlaceBet(player, candidateId, amount, session);
                     break;
                 default:
@@ -122,12 +120,12 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         }
     }
 
-
     private synchronized void handleStartBetting() throws IOException {
         if (isBettingOpen || isRaceInProgress) {
             // Betting is already open or race is in progress
             return;
         }
+        System.out.println("Starting the game loop");
 
         // Open betting
         isBettingOpen = true;
@@ -229,8 +227,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         // Broadcast to all players that the race has started
         broadcastToAll("{\"type\":\"raceStarted\",\"message\":\"The race has started!\"}");
 
-        // Map to store the current positions of all candidates
-        Map<Integer, Integer> candidatePositions = new ConcurrentHashMap<>();
+        // Map to store the finish times of all candidates
+        Map<Integer, Integer> candidateFinishTimes = new ConcurrentHashMap<>();
 
         // Shared flag to indicate when the race is over
         final AtomicBoolean raceOver = new AtomicBoolean(false);
@@ -251,9 +249,6 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             }
         }
 
-        // Start time of the race
-        long raceStartTime = System.currentTimeMillis();
-
         List<Thread> threads = new ArrayList<>();
 
         // Create and start threads for each candidate
@@ -262,58 +257,20 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             Thread thread = new Thread(() -> {
                 int totalDuration = candidateRaceDurations.get(cid);
                 long startTime = System.currentTimeMillis();
-                long endTime = startTime + totalDuration;
 
-                while (!raceOver.get() && System.currentTimeMillis() < endTime) {
-                    // Calculate elapsed time
-                    long elapsedTime = System.currentTimeMillis() - startTime;
-                    // Calculate the position based on elapsed time
-                    int position = (int) ((elapsedTime / (double) totalDuration) * 100);
-                    // Ensure position doesn't exceed 100
-                    position = Math.min(position, 100);
-                    // Update the position
-                    candidatePositions.put(cid, position);
-
-                    // Send positions of all candidates to all players
-                    try {
-                        Map<String, Object> updateMessage = new HashMap<>();
-                        updateMessage.put("type", "raceUpdate");
-                        updateMessage.put("positions", new HashMap<>(candidatePositions));
-                        String message = new ObjectMapper().writeValueAsString(updateMessage);
-                        broadcastToAll(message);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Check if the winning candidate has finished
-                    if (cid == winningCandidateId && position >= 100) {
-                        raceOver.set(true);
-                        break;
-                    }
-
-                    // Sleep for a short interval
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
+                try {
+                    // Simulate the race by sleeping for the total duration
+                    Thread.sleep(totalDuration);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
 
-                // Ensure the position is set to 100 when finished
-                candidatePositions.put(cid, 100);
+                long finishTime = System.currentTimeMillis() - startTime;
+                candidateFinishTimes.put(cid, (int) finishTime);
 
-                // Send final positions if race is over
-                if (raceOver.get()) {
-                    try {
-                        Map<String, Object> updateMessage = new HashMap<>();
-                        updateMessage.put("type", "raceUpdate");
-                        updateMessage.put("positions", new HashMap<>(candidatePositions));
-                        String message = new ObjectMapper().writeValueAsString(updateMessage);
-                        broadcastToAll(message);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                // Check if the winning candidate has finished
+                if (cid == winningCandidateId) {
+                    raceOver.set(true);
                 }
             });
             threads.add(thread);
@@ -325,6 +282,13 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             thread.join();
         }
 
+        // Send finish times to all players
+        Map<String, Object> finishTimesMessage = new HashMap<>();
+        finishTimesMessage.put("type", "raceFinishTimes");
+        finishTimesMessage.put("finishTimes", candidateFinishTimes);
+        String finishTimesJson = new ObjectMapper().writeValueAsString(finishTimesMessage);
+        broadcastToAll(finishTimesJson);
+
         // Announce the winner
         Map<String, Object> resultMessage = new HashMap<>();
         resultMessage.put("type", "raceFinished");
@@ -332,7 +296,6 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         String message = new ObjectMapper().writeValueAsString(resultMessage);
         broadcastToAll(message);
     }
-
 
     private void calculateRewards() throws IOException {
         // Get the list of bets on the winning candidate
