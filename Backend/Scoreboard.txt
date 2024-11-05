@@ -1,0 +1,25 @@
+1. Thời gian/ Hiển thị thời gian thực trên màn hình 
+2. Bảng xếp hạng tổng:
++ Thứ tự | Tên | Tiền
+3. Bảng xếp hạng người thắng mỗi lần đua
++ Thứ tự | Tên | Tiền thắng
+-> Xếp theo giảm dần 
+4. Bảng thời gian đếm ngược 
+(60s -> 0s)
+
+Làm như nào? 
+- score board chung
+1. Làm thêm bảng thời gian thực-Dành cho Front-end để lên bên trái trên màn hình(Optional)
+2. Mỗi người truy cập vào địa chỉ thì sẽ yêu cầu nhập tên và được 1 khoản giá trị mặc định 
+3. Làm 1 bảng xếp hạng tổng hiển thị mỗi khi ai đó truy cập vào trang và điền tên vào
+
+
+- Score board riêng thì sau mỗi vòng chơi sẽ hiển thị kết quả
+1. Tạo màn chơi, 
+2. Tạo tính năng cộng trừ điểm sau mỗi màn bất kỳ 
+3. Hiển thị trả lại kết quả mỗi màn cho front-end.
+4. Đồng thời BE xử lý luôn điểm tổng chung và trả về kết quả cho FE
+
+- Bảng thời gian giảm dần(Bình thường để FE làm nhưng ở đây BE sẽ làm vì nó ảnh hưởng bởi luồng - có thể chỉnh lại nếu sai)
+1. BE trả lại tg hiển thị cho FE 
+2. TG kết thúc, trả lại kết quả chung cho FE và như bước ở trên. 

@@ -1,0 +1,46 @@
+T sẽ lấy ví dụ ở đây là java FX: 
+
+1st step: Tạo 2 chương trình java FX: 1 cho client và 1 cho server.
+2nd step: Chạy và test
+3rd step: Đóng gọi tạo file 
+
+Nhưng ở trên là với java FX: 
+
+Bên dưới đây sẽ là tách biệt BE và FE:
+Tổng Quan Kiến Trúc
+Backend (BE): Sử dụng Java để quản lý logic của cuộc đua vịt, xử lý các luồng (threads) và truyền dữ liệu qua multicast.
+Frontend (FE): Sử dụng Vue 3 với Electron để xây dựng giao diện người dùng và hiển thị dữ liệu từ backend một cách trực quan.
+
+
+Quy Trình Triển Khai
+Bước 1: Tạo code Backend với Multicast và Multithread:
+Viết mã backend bằng Java để xử lý logic của cuộc đua vịt, sử dụng multithread để quản lý từng con vịt và multicast để gửi dữ liệu cập nhật về cuộc đua đến các máy khách (clients) hoặc tới frontend nếu muốn.
+Tạo Frontend với Vue và Electron:
+
+Bước 2: Sử dụng Vue.js để xây dựng giao diện người dùng (UI) cho ứng dụng.
+Sử dụng Electron để chuyển đổi ứng dụng Vue thành một ứng dụng desktop, cho phép chạy như một ứng dụng độc lập trên máy tính của người dùng.
+Kết nối Backend với Frontend thông qua WebSocket hoặc HTTP:
+
+Bước 3: Thiết lập giao tiếp giữa backend (Java) và frontend (Electron + Vue) bằng cách sử dụng WebSocket (dành cho các tính năng thời gian thực) hoặc HTTP (nếu chỉ cần gửi dữ liệu định kỳ).
+WebSocket sẽ giúp truyền dữ liệu hai chiều nhanh chóng giữa BE và FE, rất hữu ích cho việc cập nhật trạng thái cuộc đua vịt trong thời gian thực.
+
+Bước 4:Đóng gói ứng dụng
+Sử dụng Electron để đóng gói toàn bộ ứng dụng (bao gồm cả phần frontend) thành một file thực thi hoặc gói cài đặt (ví dụ: .exe trên Windows, .dmg trên macOS).
+Sau đó, người dùng chỉ cần cài đặt và chạy ứng dụng như bất kỳ phần mềm desktop nào khác mà không cần quan tâm đến việc triển khai từng phần riêng lẻ.
+
+
+***Note: Ở đây t xin làm rõ 2 kết nối để khỏi bị nhầm lẫn: 
+Có hai loại kết nối đang diễn ra trong kiến trúc của bạn:
+
+1. Kết nối giữa ứng dụng client và server qua UDP (Multicast):
+
+Multicast UDP được sử dụng để truyền dữ liệu từ server đến các client khác nhau. Đây là nơi logic của cuộc đua vịt diễn ra, nơi mỗi con vịt được đại diện bởi một luồng riêng biệt và thông tin về cuộc đua được gửi đi qua địa chỉ multicast.
+Các ứng dụng client sẽ nhận dữ liệu từ server này qua giao thức UDP multicast, đảm bảo rằng tất cả các máy khách đều có thể nhận được dữ liệu cùng lúc.
+
+2. Kết nối giữa Backend (BE) và Frontend (FE) của ứng dụng desktop:
+
+Đây là kết nối nội bộ giữa phần backend (được viết bằng Java) và phần frontend (sử dụng Vue + Electron).
+WebSocket hoặc HTTP được sử dụng để giao tiếp giữa BE và FE. WebSocket là lựa chọn tuyệt vời để xử lý dữ liệu thời gian thực và cập nhật UI liên tục, trong khi HTTP có thể được sử dụng nếu không yêu cầu tốc độ cao.
+
+
+
