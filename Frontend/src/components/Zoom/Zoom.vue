@@ -8,7 +8,7 @@
             <div class="card" style="">
                 <div class="card-body">
                     <h5 class="card-title title_zoom text-primary">
-                        RACE DUCK
+                        DUCK RACE
                         <img :src="duck" class="card-img-top icon_race" alt="...">
                     </h5>
                     <p class="card-text"> Player bet on the duck you want to choose</p>

@@ -1,13 +1,18 @@
 <template>
     <div class="zoom_duck">
+        <video autoplay loop muted preload="auto" playsinline class="background-video">
+            <source src="../../assets/video/river.mp4" type="video/mp4">
+        </video>
+        <div class="img-rank">
+            <img :src="bxh" class="card-img-top" @click="showRanking = true" alt="...">
+        </div>
+
         <button class="btn btn-warning btn-bet" @click="showModal = true" v-if="remainTime > 1">Set bet</button>
         <p class="remain_time" v-if="remainTime > 1 && statusRace == 'pending'">{{ remainTime }}</p>
         <img v-if="remainTime <= 1 && statusRace == 'pending'" :src="progress" class="card-img-top icon_progress" alt="..."> 
         <img v-if="remainTime > 24 && statusRace == 'loss'" :src="loss" class="card-img-top icon_progress" alt="..."> 
         <img v-if="remainTime > 24 && statusRace == 'win'" :src="win" class="card-img-top icon_progress" alt="..."> 
 
-
-        
         <p class="point">
             <img :src="wallet" class="card-img-top icon-point" alt="...">
             wallet: <strong class="text-warning">{{ point }}</strong> 
@@ -15,39 +20,71 @@
         </p>
 
         <div class="d-flex flex-column duck_block">
-            <div v-for="(duck, index) in ducks" :key="index" class="duck_parent" :style="{ animationDuration: duck.duration + 's' }" :class="{ running: ducksRunning }">
-                <img :src="duck.image" class="card-img-top icon_race" alt="...">
+            <div v-for="(duckk, index) in ducks" :key="index" class="duck_parent" :style="{ animationDuration: duckk.duration + 's' }" :class="{ running: ducksRunning }">
+                <img :src="duck" class="card-img-top icon_race" alt="...">
                 <span class="duck_num">{{ index + 1 }}</span>
             </div>
         </div>
-
-        <!-- <div class="d-flex flex-column duck_block">
-            <div class="duck_parent" :class="{ running: ducksRunning }">
-                <img :src="duck" class="card-img-top icon_race" alt="..."> 
-                <span class="duck_num">1</span>
-            </div>
-    
-            <div class="duck_parent" :class="{ running: ducksRunning }">
-                <img :src="duck" class="card-img-top icon_race" alt="..."> 
-                <span class="duck_num">2</span>
-            </div>
-
-            <div class="duck_parent" :class="{ running: ducksRunning }">
-                <img :src="duck" class="card-img-top icon_race" alt="..."> 
-                <span class="duck_num">3</span>
-            </div>
-
-            <div class="duck_parent" :class="{ running: ducksRunning }">
-                <img :src="duck" class="card-img-top icon_race" alt="..."> 
-                <span class="duck_num">4</span>
-            </div>
-
-            <div class="duck_parent" :class="{ running: ducksRunning }">
-                <img :src="duck" class="card-img-top icon_race" alt="..."> 
-                <span class="duck_num">5</span>
-            </div>
-        </div> -->
     </div>
+       
+   
+
+    <!-- Ranking Modal Dialog -->
+    <div class="modal modal-overlay" :class="{ show: showRanking }" v-if="showRanking">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title title_zoom text-primary">
+                        RANKING
+                        <img :src="rank" class="card-img-top icon_race" alt="...">
+                    </h5>
+                    <button type="button" class="btn-close" @click="closeRanking" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="card-text d-flex justify-content-between" v-for="(user, index) in players" :key="index">
+                        <span class="text-warning" style="font-weight: 600;" v-if="user.name !== nickname">
+                            <span class="text-danger">#{{ index + 1}}.</span>
+                            {{ user.name }} 
+                        </span>
+                        <span class="text-danger" style="font-weight: 600;" v-else>
+                            <span>#{{ index + 1}}.</span>
+                            {{ user.name }} 
+                        </span>
+                        <span class="badge rounded-pill text-bg-info text-white d-flex gap-1" style="min-width: 80px; max-height: 30px; font-size: 18px;">
+                            {{ user.points }} 
+                            <img :src="dollar" class="card-img-top icon-point" alt="...">
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- <div class="ranking">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title title_zoom text-primary">
+                        RANKING
+                        <img :src="rank" class="card-img-top icon_race" alt="...">
+                    </h5>
+                    <p class="card-text d-flex justify-content-between" v-for="(user, index) in players" :key="index">
+                        <span class="text-warning" style="font-weight: 600;" v-if="user.name !== nickname">
+                            <span class="text-danger">#{{ index + 1}}.</span>
+                            {{ user.name }} 
+                        </span>
+                        <span class="text-danger" style="font-weight: 600;" v-else>
+                            <span>#{{ index + 1}}.</span>
+                            {{ user.name }} 
+                        </span>
+                        <span class="badge rounded-pill text-bg-info text-white d-flex gap-1" style="min-width: 80px; max-height: 30px; font-size: 18px;">
+                            {{ user.points }} 
+                            <img :src="dollar" class="card-img-top icon-point" alt="...">
+                        </span>
+                    </p>
+                </div>
+            </div>
+    </div> -->
 
     <div class="modal modal-overlay" :class="{ show: showModal }"  aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1" style="display: block" v-if="showModal">
         <div class="modal-dialog modal-dialog-centered">
@@ -89,11 +126,13 @@
 
 <script setup>
 import duck from "../../assets/img/duck-toy.png"
-import dollar from "../../assets/img/dollar.png"
 import wallet from "../../assets/img/wallet.png"
 import progress from "../../assets/img/game_progress_white_bg.png"
 import loss from "../../assets/img/loss.png"
 import win from "../../assets/img/win.png"
+import rank from "../../assets/img/ranking.png"
+import dollar from "../../assets/img/dollar.png"
+import bxh from "../../assets/img/bxh.png"
 import { ref, watch } from "vue";
 import { toast } from "vue3-toastify"
 import router from "../../router"
@@ -105,19 +144,21 @@ const statusRace = ref("pending");
 const point = ref();
 const ducksRunning = ref(false);
 const player_id = localStorage.getItem("player_id");
-const ducks = ref(
-  Array.from({ length: 5 }, () => ({
-    image: duck,
-    duration: Math.random() * 5 + 10, 
-  }))
-);
+const players = ref([])
+const ducks = ref([]);
+const showRanking = ref(false); 
+
+const closeRanking = () => {
+    showRanking.value = false;
+};
+
 const socket = new WebSocket(`wss://pure-caverns-67534-35c6a327ed88.herokuapp.com/duckRace/race?playerId=${player_id}`);
 socket.addEventListener('open', function (event) {
     console.log('Connected to WebSocket server duckRace/race');
 });
 
 socket.addEventListener('message', function (event) {
-    console.log(event.data);
+    // console.log(event.data);
     if(JSON.parse(event.data).type === "timer") {
        remainTime.value = JSON.parse(event.data).remainingTime;
        if(remainTime.value === 1) {
@@ -138,17 +179,32 @@ socket.addEventListener('message', function (event) {
     }  else if(JSON.parse(event.data).type === "raceFinished") {
         statusRace.value = "win";
     } else if(JSON.parse(event.data).type === "playerUpdate") {
+        // players.value = JSON.parse(event.data).players;
+        players.value = JSON.parse(event.data).players.sort((a, b) => b.points - a.points);
         const player =  JSON.parse(event.data).players.find(player => player.id === player_id);
         if (player) {
             point.value = player.points;
-        }e
+        }
     } else if(JSON.parse(event.data).type === "error") {
         toast.error("Player banned!Please Join zoom again!!!");
         setTimeout(() => {
             router.push("/zoom");
         }, 3000);
+    } else if(JSON.parse(event.data).type === "raceFinishTimes") {
+        console.log(JSON.parse(event.data).finishTimes, typeof(JSON.parse(event.data).finishTimes));
+        const data = JSON.parse(event.data).finishTimes;
+        const arr = [];
+        if (typeof data === 'object' && data !== null) {
+            arr.push(...Object.values(data).map((time) => ({ 
+                duration: time
+            }))); 
+            ducks.value = arr;
+        } else {
+            console.error("Dữ liệu không phải là đối tượng.");
+        }
+        
     } else {
-        console.log("no non nonono");
+        // console.log("no non nonono");
     }
     
 });
@@ -218,16 +274,43 @@ function setBet(duck_select, amount) {
     left: 0;
 }
 
+.img-rank {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    right: 200px;
+    cursor: pointer;
+}
+
 .zoom_duck {
     position: relative;
     width: calc(100vw - 10px);
     height: calc(100vh - 100px);
     object-fit: cover;
-    background-image: url("../../assets/img/riverriver.png");
+    /* background-image: url("../../assets/img/riverriver.png");
     background-repeat: no-repeat;
     background-size: cover; 
-    background-position: center; 
+    background-position: center;  */
 }
+
+.background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: fadeIn 1s linear;
+    z-index: -1;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 
 .remain_time {
     position: absolute;
@@ -297,25 +380,6 @@ function setBet(duck_select, amount) {
 
 }
 
-/* .duck_parent:nth-child(1) {
-    animation-delay: 2s;
-}
-
-.duck_parent:nth-child(2) {
-    animation-delay: 1.5s;
-}
-
-.duck_parent:nth-child(3) {
-    animation-delay: 1s;
-}
-
-.duck_parent:nth-child(4) {
-    animation-delay: 2.5s;
-}
-
-.duck_parent:nth-child(5) {
-    animation-delay: 3s;
-} */
 
 
 </style>
