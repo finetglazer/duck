@@ -14,6 +14,7 @@ import org.springframework.context.event.EventListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class DuckRaceSocketHandler extends TextWebSocketHandler {
@@ -56,7 +57,6 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             playerService.getRaceSessions().put(session.getId(), session);
 
             // Send confirmation
-            //add points to player
             session.sendMessage(new TextMessage("{\"type\":\"connectedToRaceRoom\"}"));
             session.sendMessage(new TextMessage("{\"type\":\"points\",\"points\":" + playerService.getPlayerSessions().get(playerId).getPoints() + "}"));
         } else {
@@ -103,9 +103,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
 
             switch (type) {
                 case "placeBet":
-
-                    int candidateId = Integer.parseInt((String) messageMap.get("candidateId"));
-                    int amount = Integer.parseInt((String) messageMap.get("amount"));
+                    int candidateId = Integer.parseInt(messageMap.get("candidateId").toString());
+                    int amount = Integer.parseInt(messageMap.get("amount").toString());
                     handlePlaceBet(player, candidateId, amount, session);
                     break;
                 default:
@@ -121,12 +120,12 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         }
     }
 
-
     private synchronized void handleStartBetting() throws IOException {
         if (isBettingOpen || isRaceInProgress) {
             // Betting is already open or race is in progress
             return;
         }
+        System.out.println("Starting the game loop");
 
         // Open betting
         isBettingOpen = true;
@@ -135,6 +134,7 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         // Broadcast to all players that betting has started
         String message = "{\"type\":\"bettingStarted\",\"message\":\"Betting has started! You have 30 seconds to place your bets.\",\"totalPool\":" + totalBetPool + "}";
         broadcastToAll(message);
+        playerService.broadcastPlayerListToAll();
 
         // Start a countdown timer for betting (e.g., 30 seconds)
         Timer timer = new Timer();
@@ -216,64 +216,60 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
         // Randomly select a winning candidate
         winningCandidateId = new Random().nextInt(5) + 1; // Candidate IDs are from 1 to 5
 
+        // Determine total race durations for each candidate
+        Map<Integer, Integer> candidateRaceDurations = new HashMap<>();
+        Random rand = new Random();
+        int winningCandidateDuration = 10; // 10 seconds for the winner
+        candidateRaceDurations.put(winningCandidateId, winningCandidateDuration);
+
+        // Assign durations for other candidates (11 to 15 seconds)
+        for (int i = 1; i <= 5; i++) {
+            if (i != winningCandidateId) {
+                int duration = rand.nextInt(5) + 11; // Random between 11 to 15 seconds
+                candidateRaceDurations.put(i, duration);
+            }
+        }
+
+        // Send finish times to clients before the race starts
+        Map<String, Object> finishTimesMessage = new HashMap<>();
+        finishTimesMessage.put("type", "raceFinishTimes");
+        finishTimesMessage.put("finishTimes", candidateRaceDurations);
+        String finishTimesJson = new ObjectMapper().writeValueAsString(finishTimesMessage);
+        broadcastToAll(finishTimesJson);
+
+        // Now broadcast that the race has started
+        broadcastToAll("{\"type\":\"raceStarted\",\"message\":\"The race has started!\"}");
+
         // Simulate the race using threads
-        simulateRace();
+        simulateRace(candidateRaceDurations);
 
         // After race is over, calculate rewards
         calculateRewards();
     }
 
-    private void simulateRace() throws IOException, InterruptedException {
-        // Broadcast to all players that the race has started
-        broadcastToAll("{\"type\":\"raceStarted\",\"message\":\"The race has started!\"}");
+    private void simulateRace(Map<Integer, Integer> candidateRaceDurations) throws IOException, InterruptedException {
+        // No need to send finish times again
+        // Map to store the finish times of all candidates (in seconds)
+        Map<Integer, Integer> candidateFinishTimes = new ConcurrentHashMap<>(candidateRaceDurations);
 
-        // Create threads for each candidate
-        Map<Integer, Integer> candidatePositions = new ConcurrentHashMap<>();
         List<Thread> threads = new ArrayList<>();
+        final AtomicBoolean raceOver = new AtomicBoolean(false);
 
-        // Use a flag to indicate when the race is over
-        final boolean[] raceOver = {false};
-
-        for (int i = 1; i <= 5; i++) {
-            final int candidateId = i;
+        // Create and start threads for each candidate
+        for (int candidateId = 1; candidateId <= 5; candidateId++) {
+            final int cid = candidateId;
             Thread thread = new Thread(() -> {
-                int position = 0;
-                Random rand = new Random();
+                int totalDuration = candidateRaceDurations.get(cid);
+                try {
+                    // Simulate the race by sleeping for the total duration in seconds
+                    Thread.sleep(totalDuration * 1000L);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
 
-                // Simulate movement until a candidate reaches the finish line or race is over
-                while (position < 100 && !raceOver[0]) {
-                    // Move randomly between 1 to 10 units
-                    position += rand.nextInt(10) + 1;
-
-                    // Update the position
-                    candidatePositions.put(candidateId, position);
-
-                    // Send race update to all players
-                    try {
-                        Map<String, Object> updateMessage = new HashMap<>();
-                        updateMessage.put("type", "raceUpdate");
-                        updateMessage.put("candidateId", candidateId);
-                        updateMessage.put("position", position);
-                        String message = new ObjectMapper().writeValueAsString(updateMessage);
-                        broadcastToAll(message);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Sleep for a short time to simulate time passing
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        // Thread interrupted
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-
-                    // Check if the winner has reached the finish line
-                    if (candidatePositions.getOrDefault(winningCandidateId, 0) >= 100) {
-                        raceOver[0] = true;
-                        break;
-                    }
+                // Check if the winning candidate has finished
+                if (cid == winningCandidateId) {
+                    raceOver.set(true);
                 }
             });
             threads.add(thread);
@@ -335,6 +331,8 @@ public class DuckRaceSocketHandler extends TextWebSocketHandler {
             // No winners, total pool carries over to the next race
             broadcastToAll("{\"type\":\"noWinners\",\"message\":\"No winners this race. Pool carries over to next race.\"}");
             // totalBetPool remains unchanged
+            // Broadcast updated player data to all clients
+            playerService.broadcastPlayerListToAll();
         }
 
         // Prepare for the next race

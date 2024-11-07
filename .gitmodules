@@ -1,0 +1,3 @@
+[submodule "Backend/DuckRaceSwingClient"]
+	path = Backend/DuckRaceSwingClient
+	url = https://github.com/finetglazer/DuckRaceFE.git
